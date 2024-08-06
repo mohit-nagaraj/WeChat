@@ -13,7 +13,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
 
-// connectDB();
+connectDB();
 
 app.use((req, res, next) => {  
   logger.info(`${req.method} ${req.url}`);  
