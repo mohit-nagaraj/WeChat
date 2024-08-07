@@ -1,10 +1,31 @@
+import axios from "axios";
+import { baseUrl } from "../utils/interceptor";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
 const Login = () => {
+
+  const {updateUser} = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData);
-    console.log(data);
+    try {
+      axios.post(baseUrl + "/users/login", data).then((res) => {
+        updateUser(res.data);
+         navigate("/");
+      });
+      toast.success("Logged in successfully");
+    } catch (error) {
+      console.err(error);
+      toast.error("Error logging in");
+    }
   };
+
   return (
     <section className="bg-gray-50 dark:bg-gray-900">
       <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
@@ -89,7 +110,7 @@ const Login = () => {
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                 Don’t have an account yet?{" "}
                 <a
-                  href="#"
+                  href="/register"
                   className="font-medium text-primary-600 hover:underline dark:text-primary-500"
                 >
                   Sign up

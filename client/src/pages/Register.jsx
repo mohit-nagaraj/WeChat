@@ -1,10 +1,30 @@
+import axios from "axios";
+import { baseUrl } from "../utils/interceptor";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
 const Register = () => {
- 
+  
+  const {updateUser} = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData);
-    console.log(data);
+    try{
+      axios.post(baseUrl + "/users/register", data).then((res) => {
+        updateUser(res.data);
+        navigate("/");
+      });
+      toast.success("Registered successfully");
+    } catch (error) {
+      console.err(error);
+      toast.error("Error registering");
+    }
+
   };
 
   return (
@@ -101,7 +121,7 @@ const Register = () => {
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                 Already have an account?{" "}
                 <a
-                  href="#"
+                  href="/login"
                   className="font-medium text-primary-600 hover:underline dark:text-primary-500"
                 >
                   Sign in
