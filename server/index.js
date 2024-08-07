@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { connectDB } from './db/connect.js';
 import userRouter from './routes/userRoute.js';
 import logger from './logger.js';
+import chatRouter from './routes/chatRoute.js';
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/api/users', userRouter);
+app.use('/api/chats', chatRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

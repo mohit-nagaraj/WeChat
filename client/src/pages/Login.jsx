@@ -18,8 +18,11 @@ const Login = () => {
       axios.post(baseUrl + "/users/login", data).then((res) => {
         updateUser(res.data);
          navigate("/");
+         toast.success("Logged in successfully");
+      }).catch((error) => {
+        console.error(error);
+        toast.error(error.response.data.message);
       });
-      toast.success("Logged in successfully");
     } catch (error) {
       console.err(error);
       toast.error("Error logging in");
