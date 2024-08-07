@@ -5,6 +5,8 @@ import { connectDB } from './db/connect.js';
 import userRouter from './routes/userRoute.js';
 import logger from './logger.js';
 import chatRouter from './routes/chatRoute.js';
+import messageRouter from './routes/messageRoute.js';
+import authenticateToken from './utils/verify.js';
 
 dotenv.config();
 
@@ -22,7 +24,12 @@ app.use((req, res, next) => {
 });
 
 app.use('/api/users', userRouter);
+
+//verify token: only below routes are protected
+app.use(authenticateToken);
+
 app.use('/api/chats', chatRouter);
+app.use('/api/messages', messageRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
