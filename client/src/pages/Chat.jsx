@@ -4,7 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import axiosInstance from "../utils/interceptor";
-import { spaceToPlus } from "../utils/convertor";
+import { getDay, spaceToPlus } from "../utils/convertor";
 import axios from "axios";
 import { Send } from "lucide-react";
 import Message from "../components/Message";
@@ -39,7 +39,7 @@ const Chat = () => {
       //     console.log(err);
       //   });
     }
-  }
+  };
 
   const fetchChatContext = async (id) => {
     setIsLoading(true);
@@ -146,9 +146,23 @@ const Chat = () => {
 
             <div className="w-full px-5 flex flex-col justify-between">
               <div className="flex flex-col mt-5 overflow-auto pr-2">
-                {messages.map((m,i) => (
-                  <Message m={m} currId={user.id} key={i}/>
-                ))}
+                {messages.map((m, i) => {
+                  const prev = messages[i - 1]??{createdAt: new Date()};
+                  let display = false;
+                  if(new Date(m.createdAt).getDate() !== new Date(prev.createdAt).getDate()){
+                    display = true;
+                  }
+                  return (
+                    <>
+                      {display && (
+                        <div className="text-center text-gray-600 dark:text-gray-300" style={{fontSize:"12px",lineHeight:"1.5rem"}}>
+                          <span className="p-1 rounded-md bg-slate-100 dark:bg-slate-500">{getDay(m.createdAt)}</span>
+                        </div>
+                      )}
+                      <Message m={m} currId={user.id} key={i} />
+                    </>
+                  );
+                })}
               </div>
               <div className="py-5 flex gap-4 items-center">
                 <input
@@ -162,7 +176,10 @@ const Chat = () => {
                     }
                   }}
                 />
-                <Send onClick={sendMessage} className="w-8 h-8 text-gray-900 dark:text-gray-200" />
+                <Send
+                  onClick={sendMessage}
+                  className="w-8 h-8 text-gray-900 dark:text-gray-200"
+                />
               </div>
             </div>
             <div className="w-2/5 border-l-2 dark:border-gray-700 px-5">
