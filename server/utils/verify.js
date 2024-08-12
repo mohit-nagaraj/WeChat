@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 export default function authenticateToken(req, res, next) {  
-    const jwtkey = process.env.JWT_KEY;
+    const jwtkey = 'secret123';
     // Get the token from the Authorization header  
     const authHeader = req.headers['authorization'];  
     const token = authHeader && authHeader.split(' ')[1]; // Bearer token  

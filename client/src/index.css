@@ -14,7 +14,24 @@ body {
   font-family: "Nunito", sans-serif;
   background: rgb(40, 40, 40);
 } */
+*::-webkit-scrollbar {
+  width: 8px;
+}
+.box-container-overflow::-webkit-scrollbar {
+  width: 8px;
+}
 
+*::-webkit-scrollbar-track {
+  border-radius: 8px;
+  background-color: #9ca3af;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+  background-color: #111827;
+}
 /* All users */
 .all-users {
   display: flex;
