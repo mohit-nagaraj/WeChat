@@ -7,6 +7,7 @@ import axiosInstance from "../utils/interceptor";
 import { getDay, spaceToPlus } from "../utils/convertor";
 import axios from "axios";
 import { Send } from "lucide-react";
+import { io } from "socket.io-client";
 import Message from "../components/Message";
 
 const Chat = () => {
@@ -21,6 +22,7 @@ const Chat = () => {
   const [image, setImage] = useState("");
   const [fact, setFact] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [socket, setSocket] = useState(null);
   const messageRef = useRef();
 
   const sendMessage = () => {
@@ -92,8 +94,17 @@ const Chat = () => {
       navigate("/login");
     } else {
       fetchUserChat();
+      const newSocket = io("http://localhost:3000");
+      setSocket(newSocket);
+      return () => newSocket.disconnect();
     }
   }, [user, navigate, fetchUserChat]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.emit("addNewUser", user.id);
+    }
+  }, [socket]);
 
   return (
     <>
@@ -149,16 +160,25 @@ const Chat = () => {
             <div className="w-full px-5 flex flex-col justify-between">
               <div className="flex flex-col mt-5 overflow-auto pr-2">
                 {messages.map((m, i) => {
-                  const prev = messages[i - 1]??{createdAt: new Date()};
+                  const prev = messages[i - 1] ?? { createdAt: new Date() };
                   let display = false;
-                  if(new Date(m.createdAt).getDate() !== new Date(prev.createdAt).getDate()){
+                  if (
+                    new Date(m.createdAt).getDate() !==
+                    new Date(prev.createdAt).getDate()
+                  ) {
                     display = true;
                   }
                   return (
                     <>
                       {display && (
-                        <div key={i} className="text-center text-gray-600 dark:text-gray-300" style={{fontSize:"12px",lineHeight:"1.5rem"}}>
-                          <span className="p-1 rounded-md bg-slate-100 dark:bg-slate-500">{getDay(m.createdAt)}</span>
+                        <div
+                          key={i}
+                          className="text-center text-gray-600 dark:text-gray-300"
+                          style={{ fontSize: "12px", lineHeight: "1.5rem" }}
+                        >
+                          <span className="p-1 rounded-md bg-slate-100 dark:bg-slate-500">
+                            {getDay(m.createdAt)}
+                          </span>
                         </div>
                       )}
                       <Message m={m} currId={user.id} key={i} />
