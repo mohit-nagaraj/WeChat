@@ -25,19 +25,21 @@ const Chat = () => {
 
   const sendMessage = () => {
     const message = messageRef.current.value;
-    console.log(message);
     if (message) {
-      // axiosInstance
-      //   .post(`/messages/${chatContext._id}`, {
-      //     text: message,
-      //     senderId: user.id,
-      //   })
-      //   .then((res) => {
-      //     setMessages([...messages, res.data]);
-      //   })
-      //   .catch((err) => {
-      //     console.log(err);
-      //   });
+      axiosInstance
+        .post(`/messages`, {
+          text: message,
+          senderId: user.id,
+          chatId: chatContext._id,
+        })
+        .then((res) => {
+          console.log(res.data);
+          messageRef.current.value = "";
+          setMessages([...messages, res.data]);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
   };
 
@@ -155,7 +157,7 @@ const Chat = () => {
                   return (
                     <>
                       {display && (
-                        <div className="text-center text-gray-600 dark:text-gray-300" style={{fontSize:"12px",lineHeight:"1.5rem"}}>
+                        <div key={i} className="text-center text-gray-600 dark:text-gray-300" style={{fontSize:"12px",lineHeight:"1.5rem"}}>
                           <span className="p-1 rounded-md bg-slate-100 dark:bg-slate-500">{getDay(m.createdAt)}</span>
                         </div>
                       )}
