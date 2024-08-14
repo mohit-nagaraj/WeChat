@@ -23,6 +23,7 @@ const Chat = () => {
   const [fact, setFact] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [socket, setSocket] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const messageRef = useRef();
 
   const sendMessage = () => {
@@ -103,7 +104,13 @@ const Chat = () => {
   useEffect(() => {
     if (socket) {
       socket.emit("addNewUser", user.id);
+      socket.on("onlineUsers", (users) => {
+        setOnlineUsers(users);
+      });
     }
+    return () => {
+      socket?.disconnect();
+    };
   }, [socket]);
 
   return (
@@ -125,7 +132,7 @@ const Chat = () => {
                 return (
                   <div
                     key={chat._id}
-                    className={`flex flex-row py-4 px-2 items-center border-b-2 dark:border-gray-700 ${
+                    className={`relative flex flex-row py-4 px-2 items-center border-b-2 dark:border-gray-700 ${
                       selectedUser._id === chat._id
                         ? "border-l-4 border-blue-400 dark:border-blue-400"
                         : ""
@@ -135,12 +142,15 @@ const Chat = () => {
                       fetchChatContext(chat._id);
                     }}
                   >
+                    {/* { && (
+                      <div className="online absolute top-4 right-4 p-1 rounded-full bg-green-400"></div>
+                    )} */}
                     <div className="w-1/4">
                       <img
                         src={`https://ui-avatars.com/api/?name=${spaceToPlus(
                           chat.name
                         )}&background=random`}
-                        className="object-cover h-12 w-12 rounded-full"
+                        className={`object-cover h-12 w-12 rounded-full ${onlineUsers.find((u) => u.userId === chat._id)?'online':''}`}
                         alt=""
                       />
                     </div>

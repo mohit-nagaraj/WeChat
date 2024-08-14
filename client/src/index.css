@@ -235,3 +235,8 @@ body {
   align-items: center;
   justify-content: center;
 }
+
+.online{
+  padding: 2px;
+  border: 2px solid #00c026;
+}

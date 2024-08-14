@@ -17,6 +17,12 @@ io.on("connection", (socket) => {
     console.log(onlineUsers)
     io.emit("onlineUsers", onlineUsers);
   });
+  
+  socket.on("disconnect", () => {
+    console.log("User disconnected", socket.id);
+    onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
+    io.emit("onlineUsers", onlineUsers);
+  });
 
   socket.on("message", (data) => {
     console.log("Message received", data);
