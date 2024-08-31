@@ -17,7 +17,7 @@ io.on("connection", (socket) => {
     console.log(onlineUsers)
     io.emit("onlineUsers", onlineUsers);
   });
-  
+
   socket.on("disconnect", () => {
     console.log("User disconnected", socket.id);
     onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
@@ -25,8 +25,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("message", (data) => {
-    console.log("Message received", data);
-    io.emit("message", data);
+    const user = onlineUsers.find((user) => user.userId === data.recipientId);
+    console.log("sending message", data ,"to", user.socketId);
+    if (user.socketId) {
+      io.to(user.socketId).emit("message", data);
+    }
   });
 });
 

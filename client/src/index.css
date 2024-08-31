@@ -15,10 +15,10 @@ body {
   background: rgb(40, 40, 40);
 } */
 *::-webkit-scrollbar {
-  width: 8px;
+  width: 0px;
 }
 .box-container-overflow::-webkit-scrollbar {
-  width: 8px;
+  width: 0px;
 }
 
 *::-webkit-scrollbar-track {

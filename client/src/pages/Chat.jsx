@@ -25,6 +25,7 @@ const Chat = () => {
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const messageRef = useRef();
+  const msgsref = useRef();
 
   const sendMessage = () => {
     const message = messageRef.current.value;
@@ -36,9 +37,15 @@ const Chat = () => {
           chatId: chatContext._id,
         })
         .then((res) => {
-          console.log(res.data);
           messageRef.current.value = "";
           setMessages([...messages, res.data]);
+          if (socket) {
+            socket.emit("message", {
+              ...res.data,
+              recipientId: selectedUser._id,
+            });
+            
+          }
         })
         .catch((err) => {
           console.log(err);
@@ -48,25 +55,24 @@ const Chat = () => {
 
   const fetchChatContext = async (id) => {
     setIsLoading(true);
-    axios.get(`https://picsum.photos/200`).then((res) => {
-      setImage(res.request.responseURL);
-    });
-    axios
-      .get("https://api.api-ninjas.com/v1/facts", {
-        headers: {
-          "X-Api-Key": `${import.meta.env.VITE_API_NINJAS_KEY}`,
-        },
-      })
-      .then((res) => {
-        setFact(res.data[0].fact);
-      });
+    // axios.get(`https://picsum.photos/200`).then((res) => {
+    //   setImage(res.request.responseURL);
+    // });
+    // axios
+    //   .get("https://api.api-ninjas.com/v1/facts", {
+    //     headers: {
+    //       "X-Api-Key": `${import.meta.env.VITE_API_NINJAS_KEY}`,
+    //     },
+    //   })
+    //   .then((res) => {
+    //     setFact(res.data[0].fact);
+    //   });
 
     axiosInstance
       .get(`/chats/find/${id}/${user.id}`)
       .then((res) => {
         setChatContext(res.data);
         axiosInstance.get(`/messages/${res.data._id}`).then((res) => {
-          console.log(res.data);
           setMessages(res.data);
         });
       })
@@ -113,6 +119,22 @@ const Chat = () => {
     };
   }, [socket]);
 
+  useEffect(() => {
+    if (socket) {
+      socket.on("message", (data) => {
+        if (chatContext._id == data.chatId) {
+          setMessages((prev) => [...prev, data]);
+        }
+      });
+    }
+  }, [chatContext]);
+
+  useEffect(() => {
+    if (msgsref.current) {
+      msgsref.current.scrollTop = msgsref.current.scrollHeight;
+    }
+  }, [messages]);
+
   return (
     <>
       <section className="bg-gray-50 dark:bg-gray-900">
@@ -132,7 +154,7 @@ const Chat = () => {
                 return (
                   <div
                     key={chat._id}
-                    className={`relative flex flex-row py-4 px-2 items-center border-b-2 dark:border-gray-700 ${
+                    className={`relative flex flex-row py-4 px-2 items-center border-b-2 border-b-slate-200 dark:border-b-slate-600 ${
                       selectedUser._id === chat._id
                         ? "border-l-4 border-blue-400 dark:border-blue-400"
                         : ""
@@ -150,7 +172,11 @@ const Chat = () => {
                         src={`https://ui-avatars.com/api/?name=${spaceToPlus(
                           chat.name
                         )}&background=random`}
-                        className={`object-cover h-12 w-12 rounded-full ${onlineUsers.find((u) => u.userId === chat._id)?'online':''}`}
+                        className={`object-cover h-12 w-12 rounded-full ${
+                          onlineUsers.find((u) => u.userId === chat._id)
+                            ? "online"
+                            : ""
+                        }`}
                         alt=""
                       />
                     </div>
@@ -168,7 +194,10 @@ const Chat = () => {
             </div>
 
             <div className="w-full px-5 flex flex-col justify-between">
-              <div className="flex flex-col mt-5 overflow-auto pr-2">
+              <div
+                className="flex flex-col mt-5 overflow-auto pr-2"
+                ref={msgsref}
+              >
                 {messages.map((m, i) => {
                   const prev = messages[i - 1] ?? { createdAt: new Date() };
                   let display = false;
@@ -225,12 +254,29 @@ const Chat = () => {
                     className="object-cover rounded-xl h-64"
                     alt=""
                   />
-                  <div className="font-semibold py-4 dark:text-gray-200">
+                  <div className="font-semibold text-lg pt-4 dark:text-gray-200">
+                    Email:
+                    <br></br>
+                    {selectedUser.email}
+                  </div>
+                  <div className="font-semibold text-sm py-4 dark:text-gray-200">
                     Created at:
                     <br></br>
-                    {new Date(selectedUser.createdAt).toLocaleString()}
+                    {new Date(selectedUser.createdAt).toLocaleString("en-IN", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      hour12: true,
+                    })}
                   </div>
-                  <div className="font-light dark:text-gray-400">{fact}</div>
+
+                  <div className="font-light text-sm dark:text-gray-400">
+                    Status:<br></br>
+                    {fact}
+                  </div>
                 </div>
               )}
             </div>
