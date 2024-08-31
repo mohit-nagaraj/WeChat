@@ -6,7 +6,7 @@ import Navbar from "../components/Navbar";
 import axiosInstance from "../utils/interceptor";
 import { getDay, spaceToPlus } from "../utils/convertor";
 import axios from "axios";
-import { Send } from "lucide-react";
+import { Cross, Send } from "lucide-react";
 import { io } from "socket.io-client";
 import Message from "../components/Message";
 
@@ -21,6 +21,7 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [image, setImage] = useState("");
   const [fact, setFact] = useState("");
+  const [searchUser, setSearchUser] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
@@ -145,9 +146,12 @@ const Chat = () => {
               <div className="border-b-2 py-4 px-2 dark:border-gray-700">
                 <input
                   type="text"
-                  placeholder="Search chatting"
+                  placeholder="Search users"
+                  onChange={(e) => setSearchUser(e.target.value)}
+                  value={searchUser}
                   className="py-2 px-2 border-2 border-gray-200 dark:border-gray-600 rounded-2xl w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                 />
+                <Cross className="w-6 h-6 text-gray-900 dark:text-gray-200" />
               </div>
 
               {users.map((chat) => {
