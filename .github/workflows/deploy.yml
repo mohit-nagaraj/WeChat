@@ -1,4 +1,4 @@
-name: Deploy to AWS Lambda
+name: Deploy to AWS
 
 on:
   push:
@@ -6,99 +6,41 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js environment
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
         with:
-          node-version: '18' # Specify your Node.js version
+          region: ${{ secrets.AWS_REGION }}
 
-      # Step 3: Configure AWS Credentials
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      # Step 4: Cache Node.js dependencies for all folders
-      - name: Cache Node.js modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            client/node_modules
-            server/node_modules
-            socket/node_modules
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules
-
-      # ============================
-      # Deploy Client (Vite Frontend)
-      # ============================
-
-      - name: Install Client Dependencies
-        working-directory: client
-        run: npm install
-
-      - name: Build Client
-        working-directory: client
-        run: npm run build
-
-      - name: Package Client for Lambda
-        working-directory: client
+      - name: Build and push Docker image for socket
         run: |
-          zip -r ../client.zip . -x "*.git*"
+          docker buildx build --platform linux/amd64 -t ${{ secrets.ECR_SOCKET_REPO_URI }}:latest ./socket
+          docker push ${{ secrets.ECR_SOCKET_REPO_URI }}:latest
 
-      - name: Deploy Client to AWS Lambda
+      - name: Build and push Docker image for server
         run: |
-          aws lambda update-function-code --function-name ClientLambda --zip-file fileb://client.zip
+          docker buildx build --platform linux/amd64 -t ${{ secrets.ECR_SERVER_REPO_URI }}:latest ./server
+          docker push ${{ secrets.ECR_SERVER_REPO_URI }}:latest
 
-      # ============================
-      # Deploy Server (Express.js Backend)
-      # ============================
-
-      - name: Install Server Dependencies
-        working-directory: server
-        run: npm install
-
-      - name: Package Server for Lambda
-        working-directory: server
+      - name: Deploy to EC2 Instance
         run: |
-          zip -r ../server.zip . -x "*.git*"
-
-      - name: Deploy Server to AWS Lambda
-        run: |
-          aws lambda update-function-code --function-name ServerLambda --zip-file fileb://server.zip
-
-      # ============================
-      # Deploy Socket.IO Server
-      # ============================
-
-      - name: Install Socket Dependencies
-        working-directory: socket
-        run: npm install
-
-      - name: Package Socket.IO for Lambda
-        working-directory: socket
-        run: |
-          zip -r ../socket.zip . -x "*.git*"
-
-      - name: Deploy Socket.IO to AWS Lambda
-        run: |
-          aws lambda update-function-code --function-name SocketLambda --zip-file fileb://socket.zip
-
-      # ============================
-      # Cleanup Zip Files
-      # ============================
-
-      - name: Clean Up Zip Files
-        run: |
-          rm client.zip server.zip socket.zip
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_SSH_KEY }} ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
+          docker pull ${{ secrets.ECR_SOCKET_REPO_URI }}:latest
+          docker pull ${{ secrets.ECR_SERVER_REPO_URI }}:latest
+          docker stop socket-container || true
+          docker stop server-container || true
+          docker rm socket-container || true
+          docker rm server-container || true
+          docker run -d --name socket-container -p 3000:3000 ${{ secrets.ECR_SOCKET_REPO_URI }}:latest
+          docker run -d --name server-container -p 4000:4000 ${{ secrets.ECR_SERVER_REPO_URI }}:latest
+          EOF
