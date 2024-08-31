@@ -6,48 +6,54 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-        with:
-          region: ${{ secrets.AWS_REGION }}
+    - name: Log in to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+      with:
+        region: ${{ secrets.AWS_REGION }}
 
-      - name: Build and push Docker image for socket
-        run: |
-          docker buildx build --platform linux/amd64 -t ${{ secrets.ECR_SOCKET_REPO_URI }}:latest ./socket
-          docker push ${{ secrets.ECR_SOCKET_REPO_URI }}:latest
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Build and push Docker image for server
-        run: |
-          docker buildx build --platform linux/amd64 -t ${{ secrets.ECR_SERVER_REPO_URI }}:latest ./server
-          docker push ${{ secrets.ECR_SERVER_REPO_URI }}:latest
+    - name: Build and push socket Docker image
+      run: |
+        docker buildx build --platform linux/amd64 \
+        --tag ${{ secrets.ECR_SOCKET_REPO_URI }}:latest \
+        --file ./socket/Dockerfile \
+        ./socket --push
 
-      - name: Deploy to EC2 Instance
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_SSH_KEY }} ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
+    - name: Build and push server Docker image
+      run: |
+        docker buildx build --platform linux/amd64 \
+        --tag ${{ secrets.ECR_SERVER_REPO_URI }}:latest \
+        --file ./server/Dockerfile \
+        ./server --push
+
+    - name: Deploy to EC2 instance
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_SSH_KEY }} ec2-user@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
           docker pull ${{ secrets.ECR_SOCKET_REPO_URI }}:latest
           docker pull ${{ secrets.ECR_SERVER_REPO_URI }}:latest
-          docker stop socket-container || true
-          docker stop server-container || true
-          docker rm socket-container || true
-          docker rm server-container || true
-          docker run -d --name socket-container -p 3000:3000 ${{ secrets.ECR_SOCKET_REPO_URI }}:latest
-          docker run -d --name server-container -p 4000:4000 ${{ secrets.ECR_SERVER_REPO_URI }}:latest
-          EOF
+
+          docker stop socket-app || true
+          docker rm socket-app || true
+          docker run -d --name socket-app -p 3000:3000 ${{ secrets.ECR_SOCKET_REPO_URI }}:latest
+
+          docker stop server-app || true
+          docker rm server-app || true
+          docker run -d --name server-app -p 4000:4000 ${{ secrets.ECR_SERVER_REPO_URI }}:latest
+        EOF
