@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // export const baseUrl = "http://localhost:5000/api";
-export const baseUrl = "http://65.2.83.179:5000/api";
+export const baseUrl = "https://we-chat-rho.vercel.app/server/api";
 
 const axiosInstance = axios.create({
   baseURL: baseUrl,

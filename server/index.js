@@ -23,6 +23,10 @@ app.use((req, res, next) => {
   next();  
 });
 
+app.get('/health', (req, res) => {
+  res.status(200).send('Server is running');
+});
+
 app.use('/api/users', userRouter);
 
 //verify token: only below routes are protected
@@ -31,9 +35,6 @@ app.use(authenticateToken);
 app.use('/api/chats', chatRouter);
 app.use('/api/messages', messageRouter);
 
-app.get('/health', (req, res) => {
-  res.status(200).send('Server is running');
-});
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

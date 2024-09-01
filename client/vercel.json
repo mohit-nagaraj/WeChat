@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/server/:path*",
+      "destination": "http://65.2.83.179:5000/api/:path*"
+    },
+    {
+        "source": "/socket/:path*",
+        "destination": "http://65.2.83.179:3000/:path*"
+    }
+  ]
+}
