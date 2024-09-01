@@ -103,7 +103,7 @@ const Chat = () => {
     } else {
       fetchUserChat();
       // const newSocket = io("http://localhost:3000");
-      const newSocket = io("https://ec2-65-2-83-179.ap-south-1.compute.amazonaws.com:3000");
+      const newSocket = io("http://65.2.83.179:3000");
       setSocket(newSocket);
       return () => newSocket.disconnect();
     }
