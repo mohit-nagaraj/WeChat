@@ -56,18 +56,18 @@ const Chat = () => {
 
   const fetchChatContext = async (id) => {
     setIsLoading(true);
-    // axios.get(`https://picsum.photos/200`).then((res) => {
-    //   setImage(res.request.responseURL);
-    // });
-    // axios
-    //   .get("https://api.api-ninjas.com/v1/facts", {
-    //     headers: {
-    //       "X-Api-Key": `${import.meta.env.VITE_API_NINJAS_KEY}`,
-    //     },
-    //   })
-    //   .then((res) => {
-    //     setFact(res.data[0].fact);
-    //   });
+    axios.get(`https://picsum.photos/200`).then((res) => {
+      setImage(res.request.responseURL);
+    });
+    axios
+      .get("https://api.api-ninjas.com/v1/facts", {
+        headers: {
+          "X-Api-Key": `${import.meta.env.VITE_API_NINJAS_KEY}`,
+        },
+      })
+      .then((res) => {
+        setFact(res.data[0].fact);
+      });
 
     axiosInstance
       .get(`/chats/find/${id}/${user.id}`)
@@ -102,7 +102,8 @@ const Chat = () => {
       navigate("/login");
     } else {
       fetchUserChat();
-      const newSocket = io("http://localhost:3000");
+      // const newSocket = io("http://localhost:3000");
+      const newSocket = io("https://ec2-65-2-83-179.ap-south-1.compute.amazonaws.com:3000");
       setSocket(newSocket);
       return () => newSocket.disconnect();
     }

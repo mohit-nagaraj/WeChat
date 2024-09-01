@@ -31,6 +31,10 @@ app.use(authenticateToken);
 app.use('/api/chats', chatRouter);
 app.use('/api/messages', messageRouter);
 
+app.get('/health', (req, res) => {
+  res.status(200).send('Server is running');
+});
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

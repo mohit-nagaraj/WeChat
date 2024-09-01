@@ -1,7 +1,8 @@
 import { Server } from "socket.io";
 
 const io = new Server({
-  cors: "http://localhost:5173/",
+  // cors: "http://localhost:5173/",
+  cors: "https://we-chat-rho.vercel.app/",
 });
 
 let onlineUsers = [];

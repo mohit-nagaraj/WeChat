@@ -39,6 +39,9 @@ jobs:
         run: |
           docker buildx build --platform linux/amd64 \
           --tag ${{ secrets.ECR_SERVER_REPO_URI }}:latest \
+          --build-arg PORT=5000 \
+          --build-arg MONGO_URI=${{ secrets.MONGO_URI }} \
+          --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
           --file ./server/Dockerfile \
           ./server --push
 
@@ -68,5 +71,5 @@ jobs:
 
             docker stop server-app || true
             docker rm server-app || true
-            docker run -d --name server-app -p 4000:4000 ${{ secrets.ECR_SERVER_REPO_URI }}:latest
+            docker run -d --name server-app -p 5000:5000 ${{ secrets.ECR_SERVER_REPO_URI }}:latest
           EOF
