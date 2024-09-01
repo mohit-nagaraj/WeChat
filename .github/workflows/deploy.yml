@@ -37,9 +37,6 @@ jobs:
         run: |
           docker buildx build --platform linux/amd64 \
           --tag ${{ secrets.ECR_SERVER_REPO_URI }}:latest \
-          --build-arg PORT=5000 \
-          --build-arg MONGO_URI=${{ secrets.MONGO_URI }} \
-          --build-arg JWT_KEY=${{ secrets.JWT_KEY }} \
           --file ./server/Dockerfile \
           ./server --push
 
