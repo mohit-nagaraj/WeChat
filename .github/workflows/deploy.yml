@@ -25,8 +25,6 @@ jobs:
 
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
-        with:
-          region: ${{ secrets.AWS_REGION }}
 
       - name: Build and push socket Docker image
         run: |
@@ -41,7 +39,7 @@ jobs:
           --tag ${{ secrets.ECR_SERVER_REPO_URI }}:latest \
           --build-arg PORT=5000 \
           --build-arg MONGO_URI=${{ secrets.MONGO_URI }} \
-          --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
+          --build-arg JWT_KEY=${{ secrets.JWT_KEY }} \
           --file ./server/Dockerfile \
           ./server --push
 
@@ -71,5 +69,9 @@ jobs:
 
             docker stop server-app || true
             docker rm server-app || true
-            docker run -d --name server-app -p 5000:5000 ${{ secrets.ECR_SERVER_REPO_URI }}:latest
+            docker run -d --name server-app -p 5000:5000 \
+              -e PORT=5000 \
+              -e MONGO_URI=${{ secrets.MONGO_URI }} \
+              -e JWT_KEY=${{ secrets.JWT_KEY }} \
+              ${{ secrets.ECR_SERVER_REPO_URI }}:latest
           EOF
