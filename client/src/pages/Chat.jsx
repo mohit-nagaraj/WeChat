@@ -45,7 +45,7 @@ const Chat = () => {
               ...res.data,
               recipientId: selectedUser._id,
             });
-            
+
           }
         })
         .catch((err) => {
@@ -103,7 +103,7 @@ const Chat = () => {
     } else {
       fetchUserChat();
       // const newSocket = io("http://localhost:3000");
-      const newSocket = io("https://we-chat-rho.vercel.app/socket");
+      const newSocket = io("https://65.2.83.179:3000");
       setSocket(newSocket);
       return () => newSocket.disconnect();
     }
@@ -159,11 +159,10 @@ const Chat = () => {
                 return (
                   <div
                     key={chat._id}
-                    className={`relative flex flex-row py-4 px-2 items-center border-b-2 border-b-slate-200 dark:border-b-slate-600 ${
-                      selectedUser._id === chat._id
+                    className={`relative flex flex-row py-4 px-2 items-center border-b-2 border-b-slate-200 dark:border-b-slate-600 ${selectedUser._id === chat._id
                         ? "border-l-4 border-blue-400 dark:border-blue-400"
                         : ""
-                    }`}
+                      }`}
                     onClick={() => {
                       setSelectedUser(chat);
                       fetchChatContext(chat._id);
@@ -177,11 +176,10 @@ const Chat = () => {
                         src={`https://ui-avatars.com/api/?name=${spaceToPlus(
                           chat.name
                         )}&background=random`}
-                        className={`object-cover h-12 w-12 rounded-full ${
-                          onlineUsers.find((u) => u.userId === chat._id)
+                        className={`object-cover h-12 w-12 rounded-full ${onlineUsers.find((u) => u.userId === chat._id)
                             ? "online"
                             : ""
-                        }`}
+                          }`}
                         alt=""
                       />
                     </div>
