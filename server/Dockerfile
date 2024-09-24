@@ -10,12 +10,24 @@ ENV PORT=${PORT}
 ENV MONGO_URI=${MONGO_URI}  
 ENV JWT_KEY=${JWT_KEY}  
 
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy SSL certificates to the correct path
+COPY ssl/server.key ./ssl/server.key
+COPY ssl/server.cert ./ssl/server.cert
+
+# Copy package.json and package-lock.json first to leverage Docker caching
 COPY package*.json ./  
 
+# Install app dependencies
 RUN npm install  
 
+# Copy app source code
 COPY . .  
 
-EXPOSE 5000  
+# Expose the port your app runs on
+EXPOSE 433  
 
+# Command to run your app
 CMD ["npm", "start"]
