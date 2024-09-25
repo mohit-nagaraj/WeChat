@@ -10,9 +10,6 @@ ENV PORT=${PORT}
 ENV MONGO_URI=${MONGO_URI}  
 ENV JWT_KEY=${JWT_KEY}  
 
-# Create app directory
-WORKDIR /usr/src/app
-
 # Copy SSL certificates to the correct path
 COPY ssl/server.key ./ssl/server.key
 COPY ssl/server.cert ./ssl/server.cert

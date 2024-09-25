@@ -1,8 +1,5 @@
 FROM node:22-alpine   
 
-# Set the working directory
-WORKDIR /usr/src/app
-
 # Copy package.json and package-lock.json first to leverage Docker caching
 COPY package*.json ./
 
