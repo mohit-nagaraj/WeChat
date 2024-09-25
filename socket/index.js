@@ -1,24 +1,25 @@
-import fs from 'fs';
-import https from 'https';
 import { Server } from "socket.io";
-import express from 'express';
+import https from "https";
+import fs from "fs";
+import express from "express";
 
+// Initialize an express app
 const app = express();
 
-// Load SSL certificate and key
-const privateKey = fs.readFileSync('ssl/server.key', 'utf8');
-const certificate = fs.readFileSync('ssl/server.cert', 'utf8');
-const credentials = { key: privateKey, cert: certificate };
+// SSL certificates
+const sslOptions = {
+  key: fs.readFileSync("/ssl/server.key"),
+  cert: fs.readFileSync("/ssl/server.cert"),
+};
 
 // Create an HTTPS server
-const httpsServer = https.createServer(credentials, app);
+const httpsServer = https.createServer(sslOptions, app);
 
-// Initialize Socket.io with the HTTPS server
+// Initialize Socket.IO with CORS and attach to the HTTPS server
 const io = new Server(httpsServer, {
   cors: {
     origin: "https://we-chat-rho.vercel.app/",
     methods: ["GET", "POST"],
-    credentials: true, // If you need to send cookies or authorization headers
   },
 });
 
@@ -44,7 +45,7 @@ io.on("connection", (socket) => {
 
   socket.on("message", (data) => {
     const user = onlineUsers.find((user) => user.userId === data.recipientId);
-    console.log("sending message", data, "to", user.socketId);
+    console.log("sending message", data, "to", user?.socketId);
     if (user && user.socketId) {
       io.to(user.socketId).emit("message", data);
     }
@@ -53,5 +54,5 @@ io.on("connection", (socket) => {
 
 // Start the HTTPS server on port 3000
 httpsServer.listen(3000, () => {
-  console.log("HTTPS socket Server running on port 3000");
+  console.log("Server is listening on port 3000 with HTTPS");
 });
